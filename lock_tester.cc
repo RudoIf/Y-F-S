@@ -10,11 +10,13 @@
 #include <vector>
 #include <stdlib.h>
 #include <stdio.h>
+#include "lang/verify.h"
+#include "lock_client_cache.h"
 
 // must be >= 2
 int nt = 10; //XXX: lab1's rpc handlers are blocking. Since rpcs uses a thread pool of 10 threads, we cannot test more than 10 blocking rpc.
 std::string dst;
-lock_client **lc = new lock_client * [nt];
+lock_client_cache **lc = new lock_client_cache * [nt];
 lock_protocol::lockid_t a = 1;
 lock_protocol::lockid_t b = 2;
 lock_protocol::lockid_t c = 3;
@@ -169,10 +171,10 @@ main(int argc, char *argv[])
       }
     }
 
-    assert(pthread_mutex_init(&count_mutex, NULL) == 0);
+    VERIFY(pthread_mutex_init(&count_mutex, NULL) == 0);
 
-    printf("simple lock client\n");
-    for (int i = 0; i < nt; i++) lc[i] = new lock_client(dst);
+    printf("cache lock client\n");
+    for (int i = 0; i < nt; i++) lc[i] = new lock_client_cache(dst);
 
     if(!test || test == 1){
       test1();
@@ -183,8 +185,9 @@ main(int argc, char *argv[])
       for (int i = 0; i < nt; i++) {
 	int *a = new int (i);
 	r = pthread_create(&th[i], NULL, test2, (void *) a);
-	assert (r == 0);
+	VERIFY (r == 0);
       }
+	  printf("it's OK\n");
       for (int i = 0; i < nt; i++) {
 	pthread_join(th[i], NULL);
       }
@@ -197,7 +200,7 @@ main(int argc, char *argv[])
       for (int i = 0; i < nt; i++) {
 	int *a = new int (i);
 	r = pthread_create(&th[i], NULL, test3, (void *) a);
-	assert (r == 0);
+	VERIFY (r == 0);
       }
       for (int i = 0; i < nt; i++) {
 	pthread_join(th[i], NULL);
@@ -211,7 +214,7 @@ main(int argc, char *argv[])
       for (int i = 0; i < 2; i++) {
 	int *a = new int (i);
 	r = pthread_create(&th[i], NULL, test4, (void *) a);
-	assert (r == 0);
+	VERIFY (r == 0);
       }
       for (int i = 0; i < 2; i++) {
 	pthread_join(th[i], NULL);
@@ -226,7 +229,7 @@ main(int argc, char *argv[])
       for (int i = 0; i < nt; i++) {
 	int *a = new int (i);
 	r = pthread_create(&th[i], NULL, test5, (void *) a);
-	assert (r == 0);
+	VERIFY (r == 0);
       }
       for (int i = 0; i < nt; i++) {
 	pthread_join(th[i], NULL);
